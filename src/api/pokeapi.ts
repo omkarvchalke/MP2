@@ -17,7 +17,7 @@ function getCache<T>(key: string): T | null {
     mem.set(key, parsed);
     return parsed as T;
   } catch {
-    lsWritable = false; // private mode / quota / JSON parse error
+    lsWritable = false;
     return null;
   }
 }
@@ -28,15 +28,14 @@ function setCache(key: string, val: any) {
 
   try {
     const json = JSON.stringify(val);
-    // guard against very large payloads (~100KB)
     if (json.length > 100_000) return;
     localStorage.setItem(key, json);
   } catch {
-    // quota or access errors → stop using LS; app keeps working via memory cache
     lsWritable = false;
   }
 }
 
+/* List first N Pokémon */
 export async function listPokemon(limit = 151, offset = 0): Promise<PokemonListItem[]> {
   const key = `list:${limit}:${offset}`;
   const cached = getCache<PokemonListItem[]>(key);
@@ -51,6 +50,7 @@ export async function listPokemon(limit = 151, offset = 0): Promise<PokemonListI
   return items;
 }
 
+/* Get full details for a Pokémon */
 export async function getPokemon(nameOrId: string | number): Promise<PokemonBasic> {
   const key = `pk:${nameOrId}`;
   const cached = getCache<PokemonBasic>(key);
@@ -61,6 +61,7 @@ export async function getPokemon(nameOrId: string | number): Promise<PokemonBasi
   return data;
 }
 
+/** List all types (minus 'unknown' and 'shadow') */
 export async function listTypes(): Promise<PokeType[]> {
   const key = `types`;
   const cached = getCache<PokeType[]>(key);
@@ -72,18 +73,29 @@ export async function listTypes(): Promise<PokeType[]> {
   return types;
 }
 
+export async function listByType(typeName: string): Promise<string[]> {
+  const key = `type:${typeName}`;
+  const cached = getCache<string[]>(key);
+  if (cached) return cached;
+
+  const { data } = await api.get(`/type/${typeName}`);
+  const names: string[] = (data.pokemon || []).map((p: any) => p.pokemon.name);
+  setCache(key, names);
+  return names;
+}
+
+/* Helper for official artwork URL */
 export function imageFor(p: PokemonBasic | PokemonListItem): string {
   const id =
     (p as any).id ?? Number((p as PokemonListItem).url.split("/").filter(Boolean).pop());
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 }
 
-// Track the last navigation list for Detail prev/next UX
+/* Track the last navigation list for Detail */
 export function saveNavList(order: string[]) {
   try {
     sessionStorage.setItem("navList", JSON.stringify(order));
   } catch {
-    // ignore sessionStorage issues
   }
 }
 export function loadNavList(): string[] | null {
