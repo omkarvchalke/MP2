@@ -1,0 +1,12 @@
+css
+.wrap { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; }
+.media { background: #0b1220; border-radius: 16px; display: flex; align-items: center; justify-content: center; aspect-ratio: 1 / 1; }
+.meta { display: grid; gap: 10px; }
+.kv { display: grid; grid-template-columns: 140px 1fr; gap: 8px; }
+.navBtns { display: flex; gap: 8px; margin-top: 12px; }
+.heading { margin: 0; text-transform: capitalize; }
+.badgeStat { display: inline-flex; justify-content: space-between; align-items: center; gap: 16px; }
+.mt12 { margin-top: 12px; }
+.mr6 { margin-right: 6px; }
+.statGrid { display: grid; gap: 6px; }
+.capitalize { text-transform: capitalize; }

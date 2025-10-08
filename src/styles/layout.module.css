@@ -1,0 +1,93 @@
+css
+.nav {
+display: flex; gap: 12px; align-items: center; justify-content: space-between;
+padding: 16px 24px; border-bottom: 1px solid var(--border);
+position: sticky; top: 0; background: var(--bg); z-index: 20;
+}
+.navTitle { font-weight: 800; letter-spacing: .5px; }
+.navLinks { display: flex; gap: 10px; }
+.link { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); }
+.active { background: var(--card); }
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: saturate(180%) blur(10px);
+  background: linear-gradient(180deg, rgba(11,15,25,0.85), rgba(11,15,25,0.60)) ;
+  border-bottom: 1px solid var(--border-color, #374151);
+}
+
+/* Content row */
+.navInner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
+}
+
+/* Brand */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  color: var(--text-primary, #f3f4f6);
+}
+.brandAccent { color: var(--accent, #3b82f6); }
+.logoDot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent, #3b82f6);
+  box-shadow: 0 0 12px rgba(59,130,246,.6);
+}
+
+/* Tabs */
+.tabs {
+  display: inline-flex;
+  gap: 10px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color, #374151);
+  background: rgba(35,43,61,.5);
+  color: var(--text-primary, #f3f4f6);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform .08s ease, background .2s ease, border-color .2s ease;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+  background: rgba(35,43,61,.8);
+  border-color: rgba(148,163,184,.4);
+}
+
+.tabActive {
+  background: var(--accent, #3b82f6);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(59,130,246,.25);
+}
+
+.pokeballIcon {
+  font-size: 30px;                    
+  color: #ff1c1c;                     
+  filter: drop-shadow(0 0 8px rgba(255, 50, 50, 0.6))
+           drop-shadow(0 0 3px rgba(255, 255, 255, 0.6));
+  margin-right: 8px;
+  vertical-align: middle;
+  transform: translateY(1px);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.pokeballIcon:hover {
+  transform: rotate(15deg) scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(255, 80, 80, 0.9));
+}

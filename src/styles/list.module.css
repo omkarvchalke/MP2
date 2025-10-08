@@ -1,0 +1,10 @@
+css
+.controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.search { flex: 1; min-width: 220px; }
+.search input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: #0b1220; color: var(--text); }
+.table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+.row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+.cell { padding: 12px 14px; }
+.name { font-weight: 600; text-transform: capitalize; }
+.sortWrap { display: flex; gap: 8px; align-items: center; }
+.empty { color: var(--muted); padding: 24px; text-align: center; }
