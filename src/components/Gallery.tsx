@@ -8,10 +8,11 @@ export default function Gallery() {
   const [items, setItems] = useState<PokemonListItem[]>([]);
   const [types, setTypes] = useState<PokeType[]>([]);
   const [picked, setPicked] = useState<string[]>([]);
+  const [filtered, setFiltered] = useState<PokemonListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Load base lists
+  // Load base data
   useEffect(() => {
     (async () => {
       try {
@@ -19,33 +20,54 @@ export default function Gallery() {
         const [l, t] = await Promise.all([listPokemon(151), listTypes()]);
         setItems(l);
         setTypes(t);
+        setFiltered(l); // default view
       } catch {
         setError("Some data failed to load. Try again or continue with cached content.");
       }
     })();
   }, []);
 
-  // When filters are selected, fetch missing details in small chunks.
+  const typeNames = useMemo(() => types.map((t) => t.name), [types]);
+
+  // Compute filtered list
   useEffect(() => {
-    if (picked.length === 0 || items.length === 0) return;
-
     let cancelled = false;
+
     (async () => {
-      try {
-        setLoading(true);
+      if (picked.length === 0) {
+        setFiltered(items);
+        saveNavList(items.map((i) => i.name));
+        return;
+      }
 
-        // Only fetch details for items we need and don't already have cached
-        const toFetch = items.filter((p) => !localStorage.getItem(`pk:${p.name}`));
+      setLoading(true);
+      const result: PokemonListItem[] = [];
+      const chunkSize = 25;
 
-        const chunkSize = 25;
-        for (let i = 0; i < toFetch.length && !cancelled; i += chunkSize) {
-          const chunk = toFetch.slice(i, i + chunkSize);
-          await Promise.all(chunk.map((p) => getPokemon(p.name)));
-        }
-      } catch {
-        // Ignore individual fetch failures; UI will still filter what’s available
-      } finally {
-        if (!cancelled) setLoading(false);
+      // Iterate over the list in small chunks to be nice to the API
+      for (let i = 0; i < items.length && !cancelled; i += chunkSize) {
+        const chunk = items.slice(i, i + chunkSize);
+
+        // Get details
+        const details: Array<PokemonBasic | null> = await Promise.all(
+          chunk.map((p) =>
+            getPokemon(p.name).catch(() => null)
+          )
+        );
+
+        // Keep only Pokémon whose types include *all* picked types
+        chunk.forEach((p, idx) => {
+          const d = details[idx];
+          if (!d) return;
+          const names = d.types.map((t) => t.type.name);
+          if (picked.every((t) => names.includes(t))) result.push(p);
+        });
+      }
+
+      if (!cancelled) {
+        setFiltered(result);
+        saveNavList(result.map((i) => i.name));
+        setLoading(false);
       }
     })();
 
@@ -53,29 +75,6 @@ export default function Gallery() {
       cancelled = true;
     };
   }, [picked, items]);
-
-  const typeNames = useMemo(() => types.map((t) => t.name), [types]);
-
-  // Filtering logic based on cached details
-  const filtered = useMemo(() => {
-    if (picked.length === 0) return items;
-
-    return items.filter((p) => {
-      try {
-        const raw = localStorage.getItem(`pk:${p.name}`);
-        if (!raw) return false;
-        const data: PokemonBasic = JSON.parse(raw);
-        const names = data.types.map((t) => t.type.name);
-        return picked.every((t) => names.includes(t));
-      } catch {
-        return false;
-      }
-    });
-  }, [items, picked]);
-
-  useEffect(() => {
-    saveNavList(filtered.map((i) => i.name));
-  }, [filtered]);
 
   function toggleType(t: string) {
     setPicked((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
@@ -103,7 +102,9 @@ export default function Gallery() {
         {loading && picked.length > 0 && (
           <div className={styles.status}>Fetching details for selected filters…</div>
         )}
-    
+        {!loading && picked.length > 0 && filtered.length === 0 && (
+          <div className={styles.status}>No Pokémon match those types.</div>
+        )}
 
         <div className={styles.grid}>
           {(picked.length ? filtered : items).map((p) => (
